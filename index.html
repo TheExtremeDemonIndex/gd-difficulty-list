@@ -272,7 +272,7 @@
             {
                 date: "June 22, 2026",
                 changes: [
-                    "Added Sakupen Circles at #34 (Score 910), verified by Diamond.",
+                    "Added Sakupen Circles at #35 (Score 910), verified by Diamond.",
                     "Corrected directional terms in placement logs to ensure moving to a lower-numbered index is labeled as 'Moved up' rather than 'Pushed down'.",
                     "Integrated a dedicated dynamic Rank Placement History block into the details view panel for all list tracks.",
                     "Rearranged preview panel content hierarchy to place rank headers directly above level title lines.",
@@ -288,10 +288,10 @@
                     "Rearranged Placements: Silent Clubstep (#16), Nullscapes (#18), and Every End (#19).",
                     "Pushed Spectre back to #17.",
                     "Corrected Menace (#20) verifier parameters to Whizkid05.",
-                    "Updated Green Bullet (#5) creator parameters to Cherry Team.",
+                    "Updated Green Bullet (#7) creator parameters to Cherry Team.",
                     "Added Society at #1 (Score 990), verified by wPopoff. Tracker initialized at 1 day.",
                     "Updated Flamewall's final historic Top 1 tracker duration to 14 days (2 weeks).",
-                    "Added Unnerfed Sakupen Circles at #8 (Score 955), verified by ad3us."
+                    "Added Sakupen Circles at #8 (Score 955), verified by ad3us."
                 ]
             },
             {
@@ -386,18 +386,6 @@
             },
             {
                 r: 5,
-                n: "Green Bullet",
-                c: "Cherry Team",
-                v: "nickname",
-                s: 968,
-                color: "#00ff00",
-                videoId: "zfTqKYeqhTo",
-                d: "Added level featuring tight control and memory.",
-                daysAtTop1: 0,
-                history: ["June 21, 2026: Pushed down to #5", "June 17, 2026: Placed at #4"]
-            },
-            {
-                r: 6,
                 n: "Tidal Wave",
                 c: "OniLink",
                 v: "Zoink",
@@ -407,6 +395,18 @@
                 d: "A historic level with unforgettable wave sections and beach styling, maintaining its legendary reputation as a true gatekeeper.",
                 daysAtTop1: 0,
                 history: ["June 21, 2026: Pushed down to #6", "June 17, 2026: Pushed down to #5", "June 8, 2026: Placed at #4"]
+            },
+            {
+                r: 6,
+                n: "Green Bullet",
+                c: "Cherry Team",
+                v: "nickname",
+                s: 968,
+                color: "#00ff00",
+                videoId: "zfTqKYeqhTo",
+                d: "Added level featuring tight control and memory.",
+                daysAtTop1: 0,
+                history: ["June 21, 2026: Pushed down to #5", "June 17, 2026: Placed at #4"]
             },
             {
                 r: 7,
@@ -422,7 +422,7 @@
             },
             {
                 r: 8,
-                n: "Unnerfed Sakupen Circles",
+                n: "Sakupen Circles",
                 c: "Nick24",
                 v: "ad3us",
                 s: 955,
@@ -787,59 +787,88 @@
         function getThumb(l){ 
             return l.videoId ? `https://i.ytimg.com/vi/${l.videoId}/hqdefault.jpg` : "https://via.placeholder.com/320x180?text=No+Thumbnail"; 
         }
-        function getVideo(l){ 
-            return l.videoId ? `https://www.youtube.com/watch?v=${l.videoId}` : "#"; 
+        function getVideo(l) {
+            return l.videoId ? `https://www.youtube.com/watch?v=${l.videoId}` : "#";
         }
-        function render(){
-            const list = document.getElementById("list");
-            const panel = document.getElementById("panel");
-            const q = document.getElementById("search").value.toLowerCase();
-            const sortType = document.getElementById("sort").value;
-            list.innerHTML = "";
-            let filtered = levels.filter(l => l.n.toLowerCase().includes(q) || l.c.toLowerCase().includes(q) || l.v.toLowerCase().includes(q));
-            if (sortType === "low-score") {
-                filtered.sort((a, b) => a.s - b.s);
-            } else if (sortType === "alphabetical") {
-                filtered.sort((a, b) => a.n.localeCompare(b.n));
-            } else if (sortType === "site-top1") {
-                filtered.sort((a, b) => b.daysAtTop1 - a.daysAtTop1);
-            } else {
+
+        let activeIndex = null;
+
+        function render() {
+            const query = document.getElementById("search").value.toLowerCase();
+            const sortVal = document.getElementById("sort").value;
+            const container = document.getElementById("list");
+
+            let filtered = levels.filter(l => 
+                l.n.toLowerCase().includes(query) || 
+                l.c.toLowerCase().includes(query) || 
+                l.v.toLowerCase().includes(query)
+            );
+
+            if (sortVal === "placement") {
                 filtered.sort((a, b) => a.r - b.r);
+            } else if (sortVal === "low-score") {
+                filtered.sort((a, b) => a.s - b.s);
+            } else if (sortVal === "alphabetical") {
+                filtered.sort((a, b) => a.n.localeCompare(b.n));
+            } else if (sortVal === "site-top1") {
+                filtered.sort((a, b) => b.daysAtTop1 - a.daysAtTop1);
             }
-            filtered.forEach(l => {
-                const card = document.createElement("div");
-                card.className = "card";
-                card.innerHTML = `<img class="thumb" src="${getThumb(l)}"><div class="info"><div class="name">#${l.r} ${l.n}</div><div class="meta">${l.c} • Verified by ${l.v} • Score ${l.s}</div></div>`;
-                card.onclick = () => {
-                    document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
-                    card.classList.add('active');
-                    card.style.setProperty('--active-color', l.color);
-                    
-                    const top1Line = l.daysAtTop1 > 0 
-                        ? `<p style="font-size:14px; color:#ff4d4d; font-weight:bold; margin-top:-5px; margin-bottom:5px;">Days at Top 1: ${l.daysAtTop1} days</p>` 
-                        : '';
 
-                    const historyItems = l.history && l.history.length > 0 
-                        ? l.history.map(item => `<li>${item}</li>`).join('') 
-                        : '<li>No recorded adjustments</li>';
-
-                    panel.innerHTML = `
-                        <h2 style="font-size:24px; font-weight:bold; margin:0; opacity:0.6; color:${l.color};">#${l.r}</h2>
-                        <h3 style="margin-top:0; margin-bottom:10px; font-size:26px;">${l.n}</h3>
-                        <p style="color:#aaa; margin-top:0;">Created by ${l.c} • Verified by <strong>${l.v}</strong></p>
-                        ${top1Line}
-                        <div class="desc">${l.d}</div>
-                        <div class="history-box">
-                            <div class="history-title">Rank Placement History</div>
-                            <ul class="history-list">${historyItems}</ul>
-                        </div>
-                        <img src="${getThumb(l)}">
-                        <button class="panel-action-btn" onclick="window.open('${getVideo(l)}','_blank')">Watch Video</button>
-                    `;
-                };
-                list.appendChild(card);
-            });
+            container.innerHTML = filtered.map(l => `
+                <div class="card ${l.r === activeIndex ? 'active' : ''}" style="--active-color: ${l.color}" onclick="selectLevel(${l.r})">
+                    <img class="thumb" src="${getThumb(l)}" alt="${l.n} thumbnail">
+                    <div class="info">
+                        <div class="name">#${l.r} ${l.n}</div>
+                        <div class="meta">By ${l.c} • Verified by ${l.v}</div>
+                    </div>
+                    <div style="font-weight: bold; font-size: 18px; color: ${l.color}">${l.s}</div>
+                </div>
+            `).join('');
         }
+
+        function selectLevel(rank) {
+            activeIndex = rank;
+            const level = levels.find(l => l.r === rank);
+            const panel = document.getElementById("panel");
+            
+            if (!level) return;
+
+            let top1Badge = level.daysAtTop1 > 0 ? `
+                <div style="background: rgba(251, 191, 36, 0.1); border: 1px solid #fbbf24; color: #fbbf24; padding: 8px; border-radius: 6px; font-size: 13px; font-weight: 500; margin-bottom: 10px;">
+                     Historic Top 1 Duration: ${level.daysAtTop1} days
+                </div>
+            ` : '';
+
+            panel.innerHTML = `
+                <div style="font-size: 12px; font-weight: bold; letter-spacing: 1px; color: ${level.color}; text-transform: uppercase;">Rank #${level.r}</div>
+                <h2 style="margin: 0; font-size: 28px;">${level.n}</h2>
+                <div style="font-size: 14px; opacity: 0.8; margin-bottom: 5px;">Created by <strong>${level.c}</strong></div>
+                <div style="font-size: 14px; opacity: 0.8; margin-bottom: 15px;">Verified by <strong>${level.v}</strong></div>
+                
+                ${top1Badge}
+
+                <img src="${getThumb(level)}" alt="${level.n} preview">
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02); padding: 12px; border-radius: 6px; border: 1px solid var(--border-color);">
+                    <span style="opacity: 0.7; font-size: 14px;">Index Weight Score</span>
+                    <strong style="font-size: 20px; color: ${level.color}">${level.s} PTS</strong>
+                </div>
+
+                <div class="desc">${level.d}</div>
+
+                <div class="history-box">
+                    <div class="history-title">Rank Placement History</div>
+                    <ul class="history-list">
+                        ${level.history.map(h => `<li>${h}</li>`).join('')}
+                    </ul>
+                </div>
+
+                <button class="panel-action-btn" style="background-color: ${level.color}" onclick="window.open('${getVideo(level)}', '_blank')">Watch Verification Reveal</button>
+            `;
+            
+            render();
+        }
+
         render();
     </script>
 </body>
