@@ -10,6 +10,7 @@
             --surface-color: #1a1a1e;
             --text-color: #e2e8f0;
             --accent-color: #3b82f6;
+            --active-color: #3b82f6;
             --border-color: #2d2d34;
             --header-bg: #1e1e24;
         }
@@ -19,6 +20,7 @@
             --surface-color: #ffffff;
             --text-color: #0f172a;
             --accent-color: #2563eb;
+            --active-color: #2563eb;
             --border-color: #e2e8f0;
             --header-bg: #f1f5f9;
         }
@@ -178,6 +180,10 @@
             font-weight: bold;
             width: 100%;
             margin-top: 10px;
+            text-align: center;
+            text-decoration: none;
+            display: block;
+            border-radius: 6px;
         }
 
         /* Modal styling */
@@ -389,7 +395,7 @@
                 n: "Tidal Wave",
                 c: "OniLink",
                 v: "Zoink",
-                s: 966,
+                s: 968,
                 color: "#00f0ff",
                 videoId: "frjtBcNI6dI",
                 d: "A historic level with unforgettable wave sections and beach styling, maintaining its legendary reputation as a true gatekeeper.",
@@ -401,7 +407,7 @@
                 n: "Green Bullet",
                 c: "Cherry Team",
                 v: "nickname",
-                s: 968,
+                s: 966,
                 color: "#00ff00",
                 videoId: "zfTqKYeqhTo",
                 d: "Added level featuring tight control and memory.",
@@ -742,7 +748,7 @@
                 videoId: "_T1xofG2zqo",
                 d: "An ironic title masking a deeply punishing set of mechanics, requiring flawless consistency to secure a clear.",
                 daysAtTop1: 0,
-                history: ["June 26, 2026: Pushed down to #34", "June 22, 2026: Pushed down to #33", "June 21, 2026: Pushed down to #34", "June 17, 2026: Pushed down to #32", "June 8, 2026: Placed at #30"]
+                history: ["June 26, 2026: Pushed down to #34", "June 22, 2026: Pushed down to #32", "June 21, 2026: Pushed down to #34", "June 17, 2026: Pushed down to #32", "June 8, 2026: Placed at #30"]
             },
             {
                 r: 35,
@@ -757,6 +763,7 @@
                 history: ["June 26, 2026: Pushed down to #35", "June 22, 2026: Placed at #34"]
             }
         ];
+
         function toggleChangelog() {
             const modal = document.getElementById("changelog-modal");
             if (modal.classList.contains("show")) {
@@ -769,24 +776,28 @@
                 renderChangelog();
             }
         }
+
         function renderChangelog() {
             const listContainer = document.getElementById("changelog-list");
             listContainer.innerHTML = changelogData.map(log => `
                 <div class="log-entry">
-                    <div class="log-date" style="font-weight: bold; color: var(--header-bg); margin-bottom: 8px;">${log.date}</div>
+                    <div class="log-date" style="font-weight: bold; margin-bottom: 8px;">${log.date}</div>
                     <ul class="log-list" style="margin: 0; padding-left: 20px;">
                         ${log.changes.map(c => `<li>${c}</li>`).join('')}
                     </ul>
                 </div>
             `).join('');
         }
+
         function toggleTheme() {
             const currentTheme = document.body.getAttribute("data-theme");
             document.body.setAttribute("data-theme", currentTheme === "light" ? "dark" : "light");
         }
+
         function getThumb(l){ 
             return l.videoId ? `https://i.ytimg.com/vi/${l.videoId}/hqdefault.jpg` : "https://via.placeholder.com/320x180?text=No+Thumbnail"; 
         }
+
         function getVideo(l) {
             return l.videoId ? `https://www.youtube.com/watch?v=${l.videoId}` : "#";
         }
@@ -794,16 +805,18 @@
         let activeIndex = null;
 
         function render() {
-            const query = document.getElementById("search").value.toLowerCase();
+            const searchVal = document.getElementById("search").value.toLowerCase();
             const sortVal = document.getElementById("sort").value;
-            const container = document.getElementById("list");
+            const listContainer = document.getElementById("list");
 
+            // Filter
             let filtered = levels.filter(l => 
-                l.n.toLowerCase().includes(query) || 
-                l.c.toLowerCase().includes(query) || 
-                l.v.toLowerCase().includes(query)
+                l.n.toLowerCase().includes(searchVal) || 
+                l.c.toLowerCase().includes(searchVal) || 
+                l.v.toLowerCase().includes(searchVal)
             );
 
+            // Sort
             if (sortVal === "placement") {
                 filtered.sort((a, b) => a.r - b.r);
             } else if (sortVal === "low-score") {
@@ -814,61 +827,63 @@
                 filtered.sort((a, b) => b.daysAtTop1 - a.daysAtTop1);
             }
 
-            container.innerHTML = filtered.map(l => `
-                <div class="card ${l.r === activeIndex ? 'active' : ''}" style="--active-color: ${l.color}" onclick="selectLevel(${l.r})">
-                    <img class="thumb" src="${getThumb(l)}" alt="${l.n} thumbnail">
-                    <div class="info">
-                        <div class="name">#${l.r} ${l.n}</div>
-                        <div class="meta">By ${l.c} • Verified by ${l.v}</div>
+            // Render List View
+            listContainer.innerHTML = filtered.map((l, index) => {
+                const globalIndex = levels.findIndex(lvl => lvl.n === l.n && lvl.r === l.r);
+                const isSelected = activeIndex === globalIndex ? 'active' : '';
+                return `
+                    <div class="card ${isSelected}" onclick="selectLevel(${globalIndex})">
+                        <div style="font-size: 20px; font-weight: bold; min-width: 40px; text-align: center; color: ${l.color}">#${l.r}</div>
+                        <img class="thumb" src="${getThumb(l)}" alt="${l.n}">
+                        <div class="info">
+                            <div class="name">${l.n}</div>
+                            <div class="meta">By ${l.c} • Verified by ${l.v}</div>
+                        </div>
+                        <div style="font-weight: bold; opacity: 0.8;">Score: ${l.s}</div>
                     </div>
-                    <div style="font-weight: bold; font-size: 18px; color: ${l.color}">${l.s}</div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
-        function selectLevel(rank) {
-            activeIndex = rank;
-            const level = levels.find(l => l.r === rank);
-            const panel = document.getElementById("panel");
+        function selectLevel(index) {
+            activeIndex = index;
+            render();
             
-            if (!level) return;
+            const panel = document.getElementById("panel");
+            if (index === null || !levels[index]) {
+                panel.innerHTML = `<p style="text-align: center; opacity: 0.5; margin-top: 50px;">Select a demon to preview details</p>`;
+                return;
+            }
 
-            let top1Badge = level.daysAtTop1 > 0 ? `
-                <div style="background: rgba(251, 191, 36, 0.1); border: 1px solid #fbbf24; color: #fbbf24; padding: 8px; border-radius: 6px; font-size: 13px; font-weight: 500; margin-bottom: 10px;">
-                     Historic Top 1 Duration: ${level.daysAtTop1} days
-                </div>
-            ` : '';
+            const l = levels[index];
+            const historyItems = l.history ? l.history.map(h => `<li>${h}</li>`).join('') : '<li>No recorded updates</li>';
+            const top1Box = l.daysAtTop1 > 0 ? `<div class="history-box" style="margin-bottom: 10px; border-color: #eab308; background: rgba(234, 179, 8, 0.05)"><div class="history-title" style="color: #eab308">👑 Peak Dominance</div><div>Held Rank #1 spot for <strong>${l.daysAtTop1} days</strong>.</div></div>` : '';
 
             panel.innerHTML = `
-                <div style="font-size: 12px; font-weight: bold; letter-spacing: 1px; color: ${level.color}; text-transform: uppercase;">Rank #${level.r}</div>
-                <h2 style="margin: 0; font-size: 28px;">${level.n}</h2>
-                <div style="font-size: 14px; opacity: 0.8; margin-bottom: 5px;">Created by <strong>${level.c}</strong></div>
-                <div style="font-size: 14px; opacity: 0.8; margin-bottom: 15px;">Verified by <strong>${level.v}</strong></div>
+                <div style="font-size: 14px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; color: ${l.color}">Rank #${l.r}</div>
+                <h2 style="margin: 0; font-size: 28px;">${l.n}</h2>
+                <div style="opacity: 0.7; font-size: 14px; margin-top: -5px;">Created by <strong>${l.c}</strong></div>
+                <div style="opacity: 0.7; font-size: 14px;">Verified by <strong>${l.v}</strong></div>
+                <div style="font-weight: bold; font-size: 16px; margin-top: 5px;">List Weight Score: ${l.s}</div>
                 
-                ${top1Badge}
-
-                <img src="${getThumb(level)}" alt="${level.n} preview">
+                <img src="${getThumb(l)}" alt="${l.n}" style="margin-top: 5px;">
                 
-                <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02); padding: 12px; border-radius: 6px; border: 1px solid var(--border-color);">
-                    <span style="opacity: 0.7; font-size: 14px;">Index Weight Score</span>
-                    <strong style="font-size: 20px; color: ${level.color}">${level.s} PTS</strong>
-                </div>
-
-                <div class="desc">${level.d}</div>
+                <div class="desc">${l.d}</div>
+                
+                ${top1Box}
 
                 <div class="history-box">
                     <div class="history-title">Rank Placement History</div>
                     <ul class="history-list">
-                        ${level.history.map(h => `<li>${h}</li>`).join('')}
+                        ${historyItems}
                     </ul>
                 </div>
 
-                <button class="panel-action-btn" style="background-color: ${level.color}" onclick="window.open('${getVideo(level)}', '_blank')">Watch Verification Reveal</button>
+                <a class="panel-action-btn" href="${getVideo(l)}" target="_blank">Watch Video</a>
             `;
-            
-            render();
         }
 
+        // Initialize script logic layout execution
         render();
     </script>
 </body>
