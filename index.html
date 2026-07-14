@@ -798,83 +798,77 @@
                 return;
             }
 
-            let top1Section = '';
-            if (selectedLevel.daysAtTop1 > 0) {
-                top1Section = `
-                    <div style="font-size: 14px; margin-top: 5px; color: #eab308; font-weight: bold;">
-                        👑 Days at Top 1: ${selectedLevel.daysAtTop1} days
-                    </div>
-                `;
-            }
-
-            let historySection = '';
-            if (selectedLevel.history && selectedLevel.history.length > 0) {
-                historySection = `
-                    <div class="history-box">
-                        <div class="history-title">Rank Placement History</div>
-                        <ul class="history-list">
-                            ${selectedLevel.history.map(h => `<li>${h}</li>`).join('')}
-                        </ul>
-                    </div>
-                `;
-            }
+            const historyBlock = selectedLevel.history && selectedLevel.history.length > 0 
+                ? `
+                <div class="history-box">
+                    <div class="history-title">Rank Placement History</div>
+                    <ul class="history-list">
+                        ${selectedLevel.history.map(item => `<li>${item}</li>`).join('')}
+                    </ul>
+                </div>
+                `
+                : '';
 
             panel.innerHTML = `
-                <div style="font-size: 14px; text-transform: uppercase; font-weight: bold; letter-spacing: 1px; color: var(--accent-color);">Rank #${selectedLevel.r}</div>
-                <h2 class="name" style="margin: 0 0 5px 0; font-size: 24px;">${selectedLevel.n}</h2>
-                <div class="meta" style="margin-bottom: 10px;">
-                    <div><strong>Creator:</strong> ${selectedLevel.c}</div>
-                    <div><strong>Verifier:</strong> ${selectedLevel.v}</div>
-                    <div><strong>Points Score:</strong> ${selectedLevel.s}</div>
-                    ${top1Section}
+                <div style="font-size: 14px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; color: var(--accent-color); margin-bottom: -5px;">
+                    Rank #${selectedLevel.r}
                 </div>
-                <img src="${getThumb(selectedLevel)}" alt="${selectedLevel.n} thumbnail">
+                <h2 style="margin: 0; font-size: 26px;">${selectedLevel.n}</h2>
+                <div style="font-size: 14px; opacity: 0.7;">
+                    Created by <span style="font-weight: 600;">${selectedLevel.c}</span><br>
+                    Verified by <span style="font-weight: 600;">${selectedLevel.v}</span>
+                </div>
+                <img src="${getThumb(selectedLevel)}" alt="${selectedLevel.n}">
                 <div class="desc">${selectedLevel.d}</div>
-                ${historySection}
-                <a class="panel-action-btn" href="https://youtu.be/${selectedLevel.videoId}" target="_blank">Watch Verification Video</a>
+                <div style="font-size: 14px; border-top: 1px solid var(--border-color); padding-top: 12px; margin-top: 5px;">
+                    <strong>List Score:</strong> ${selectedLevel.s}<br>
+                    <strong>Days at Top 1:</strong> ${selectedLevel.daysAtTop1} days
+                </div>
+                ${historyBlock}
+                ${selectedLevel.videoId ? `<a href="https://youtu.be/${selectedLevel.videoId}" target="_blank" class="panel-action-btn">Watch Video</a>` : ''}
             `;
         }
 
         function render() {
-            const listContainer = document.getElementById("list");
-            const searchVal = document.getElementById("search").value.toLowerCase();
+            const list = document.getElementById("list");
+            const query = document.getElementById("search").value.toLowerCase();
             const sortVal = document.getElementById("sort").value;
 
             let filtered = levels.filter(l => 
-                l.n.toLowerCase().includes(searchVal) || 
-                l.c.toLowerCase().includes(searchVal) || 
-                l.v.toLowerCase().includes(searchVal)
+                l.n.toLowerCase().includes(query) || 
+                l.c.toLowerCase().includes(query) || 
+                l.v.toLowerCase().includes(query)
             );
 
-            if (sortVal === "placement") {
-                filtered.sort((a, b) => a.r - b.r);
-            } else if (sortVal === "low-score") {
+            if (sortVal === "low-score") {
                 filtered.sort((a, b) => a.s - b.s);
             } else if (sortVal === "alphabetical") {
                 filtered.sort((a, b) => a.n.localeCompare(b.n));
             } else if (sortVal === "site-top1") {
                 filtered.sort((a, b) => b.daysAtTop1 - a.daysAtTop1);
+            } else {
+                filtered.sort((a, b) => a.r - b.r);
             }
 
-            listContainer.innerHTML = filtered.map(l => {
+            list.innerHTML = filtered.map(l => {
                 const isActive = selectedLevel && selectedLevel.r === l.r ? 'active' : '';
                 return `
                     <div class="card ${isActive}" onclick="selectLevel(${l.r})">
                         <div class="rank-badge">#${l.r}</div>
-                        <img class="thumb" src="${getThumb(l)}" alt="thumb">
+                        <img class="thumb" src="${getThumb(l)}" alt="${l.n}">
                         <div class="info">
                             <div class="name">${l.n}</div>
-                            <div class="meta">By ${l.c} | Verified by ${l.v}</div>
+                            <div class="meta">By ${l.c} • Verified by ${l.v}</div>
                         </div>
-                        <div style="font-weight: bold; font-size: 14px; opacity: 0.8; padding-right: 10px;">
-                            ${l.s} pts
+                        <div style="font-weight: bold; font-size: 14px; opacity: 0.9; text-align: right; min-width: 80px;">
+                            ${l.s}
                         </div>
                     </div>
                 `;
             }).join('');
         }
 
-        // Initialize display
+        // Initialize display list
         render();
     </script>
 </body>
