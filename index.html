@@ -287,7 +287,7 @@
                 date: "June 26, 2026",
                 changes: [
                     "Added Deimos at #32 (Score 915), verified by Doggie.",
-                    "Updated Society's tracker duration parameter to 5 days at Top 1.",
+                    "Updated Society's tracker duration parameter to 23 days at Top 1.",
                     "Moved Menace up to #20.",
                     "Pushed down Avernus, Acheron, and subsequent tracks accordingly."
                 ]
@@ -368,7 +368,7 @@
                 s: 990,
                 videoId: "omG1VuyA92w",
                 d: "A highly intricate layout contrasted against sharp styling markers, demanding pinpoint input fluidity through brutal transitions.",
-                daysAtTop1: 5,
+                daysAtTop1: 23,
                 history: ["June 21, 2026: Placed at #1"]
             },
             {
@@ -800,75 +800,73 @@
             );
 
             // Sort
-            if (sortVal === "placement") {
-                filtered.sort((a, b) => a.r - b.r);
-            } else if (sortVal === "low-score") {
+            if (sortVal === "low-score") {
                 filtered.sort((a, b) => a.s - b.s);
             } else if (sortVal === "alphabetical") {
                 filtered.sort((a, b) => a.n.localeCompare(b.n));
             } else if (sortVal === "site-top1") {
                 filtered.sort((a, b) => b.daysAtTop1 - a.daysAtTop1);
+            } else {
+                filtered.sort((a, b) => a.r - b.r);
             }
 
             // Render List Items
             const listContainer = document.getElementById("list");
-            listContainer.innerHTML = filtered.map(l => {
-                const isActive = selectedLevel && selectedLevel.r === l.r ? "active" : "";
-                return `
-                    <div class="card ${isActive}" onclick="selectLevel(${l.r})">
-                        <div class="rank-badge">#${l.r}</div>
-                        <img class="thumb" src="${getThumb(l)}" alt="${l.n}">
-                        <div class="info">
-                            <div class="name">${l.n}</div>
-                            <div class="meta">By ${l.c} • Verifier: ${l.v}</div>
-                        </div>
-                        <div style="font-weight: bold; opacity: 0.8; font-size: 15px; margin-right: 10px;">
-                            ${l.s}
-                        </div>
+            listContainer.innerHTML = filtered.map(l => `
+                <div class="card ${selectedLevel && selectedLevel.r === l.r ? 'active' : ''}" onclick="selectLevel(${l.r})">
+                    <div class="rank-badge">#${l.r}</div>
+                    <img class="thumb" src="${getThumb(l)}" alt="${l.n} thumbnail">
+                    <div class="info">
+                        <div class="name">${l.n}</div>
+                        <div class="meta">By ${l.c} • Verifier: ${l.v} • Score: ${l.s}</div>
                     </div>
-                `;
-            }).join('');
+                </div>
+            `).join('');
 
-            // Render Details Panel
+            // Render Preview Panel
             const panelContainer = document.getElementById("panel");
             if (selectedLevel) {
-                const daysBlock = selectedLevel.daysAtTop1 > 0 
-                    ? `<div class="meta" style="font-weight: 500;">Days at Rank 1: ${selectedLevel.daysAtTop1} days</div>` 
-                    : "";
-
                 panelContainer.innerHTML = `
-                    <div style="font-size: 13px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.6; font-weight: bold;">
-                        Rank #${selectedLevel.r}
+                    <div style="font-size: 13px; font-weight: 800; text-transform: uppercase; color: var(--accent-color); letter-spacing: 1px;">Rank #${selectedLevel.r}</div>
+                    <h2 style="margin: 0; font-size: 28px; font-weight: 800; line-height: 1.2;">${selectedLevel.n}</h2>
+                    <div class="meta" style="font-size: 14px; margin-top: -5px;">
+                        Created by <strong style="color: var(--text-color);">${selectedLevel.c}</strong><br>
+                        Verified by <strong style="color: var(--text-color);">${selectedLevel.v}</strong>
                     </div>
-                    <h2 style="margin: 0; font-size: 28px;">${selectedLevel.n}</h2>
-                    <div class="meta" style="margin-top: -5px;">Created by <strong>${selectedLevel.c}</strong></div>
-                    <div class="meta">Verified by <strong>${selectedLevel.v}</strong></div>
-                    <div class="meta">Score Value: <strong>${selectedLevel.s}</strong></div>
-                    ${daysBlock}
                     
-                    <img src="${getThumb(selectedLevel)}" alt="${selectedLevel.n}" style="margin-top: 10px;">
+                    <img src="${getThumb(selectedLevel)}" alt="${selectedLevel.n}">
                     
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 5px 0;">
+                        <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; text-align: center;">
+                            <div style="font-size: 11px; opacity: 0.6; text-transform: uppercase; font-weight: bold;">List Score</div>
+                            <div style="font-size: 20px; font-weight: bold; margin-top: 4px; color: var(--accent-color);">${selectedLevel.s}</div>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; text-align: center;">
+                            <div style="font-size: 11px; opacity: 0.6; text-transform: uppercase; font-weight: bold;">Days at Top 1</div>
+                            <div style="font-size: 20px; font-weight: bold; margin-top: 4px;">${selectedLevel.daysAtTop1}</div>
+                        </div>
+                    </div>
+
                     <div class="desc">${selectedLevel.d}</div>
-                    
+
                     <div class="history-box">
                         <div class="history-title">Rank Placement History</div>
                         <ul class="history-list">
                             ${selectedLevel.history.map(h => `<li>${h}</li>`).join('')}
                         </ul>
                     </div>
-                    
-                    <a class="panel-action-btn" href="https://youtu.be/${selectedLevel.videoId}" target="_blank">
-                        Watch Verification Video
-                    </a>
+
+                    <a class="panel-action-btn" href="https://youtube.com/watch?v=${selectedLevel.videoId}" target="_blank">Watch Video</a>
                 `;
             } else {
-                panelContainer.innerHTML = `
-                    <p style="text-align: center; opacity: 0.5; margin-top: 50px;">Select a demon to preview details</p>
-                `;
+                panelContainer.innerHTML = `<p style="text-align: center; opacity: 0.5; margin-top: 50px;">Select a demon to preview details</p>`;
             }
         }
 
-        // Initialize display
+        // Initialize App
+        if (levels.length > 0) {
+            selectedLevel = levels[0];
+        }
         render();
     </script>
 </body>
