@@ -786,6 +786,44 @@
         function selectLevel(rank) {
             selectedLevel = levels.find(l => l.r === rank);
             render();
+            renderPanel();
+        }
+
+        function renderPanel() {
+            const panel = document.getElementById("panel");
+            if (!selectedLevel) {
+                panel.innerHTML = `<p style="text-align: center; opacity: 0.5; margin-top: 50px;">Select a demon to preview details</p>`;
+                return;
+            }
+
+            let top1Section = '';
+            if (selectedLevel.daysAtTop1 > 0) {
+                top1Section = `<div style="font-size: 14px; margin-bottom: 5px; color: #eab308; font-weight: bold;">🏆 Days at Top 1: ${selectedLevel.daysAtTop1}</div>`;
+            }
+
+            let historyItems = selectedLevel.history.map(h => `<li>${h}</li>`).join('');
+
+            panel.innerHTML = `
+                <div style="font-size: 14px; font-weight: bold; color: var(--accent-color); text-transform: uppercase;">#${selectedLevel.r} Placement</div>
+                <h2 style="margin: 0; font-size: 26px;">${selectedLevel.n}</h2>
+                <div style="font-size: 14px; opacity: 0.8; margin-bottom: 10px;">By ${selectedLevel.c} | Verified by ${selectedLevel.v}</div>
+                
+                <img src="${getThumb(selectedLevel)}" alt="${selectedLevel.n}">
+                
+                <div style="font-size: 15px; font-weight: bold; margin-top: 5px;">Score Allocation: ${selectedLevel.s}</div>
+                ${top1Section}
+                
+                <p class="desc">${selectedLevel.d}</p>
+                
+                <div class="history-box">
+                    <div class="history-title">Rank Placement History</div>
+                    <ul class="history-list">
+                        ${historyItems}
+                    </ul>
+                </div>
+                
+                <a href="https://youtu.be/${selectedLevel.videoId}" target="_blank" class="panel-action-btn">Watch Video</a>
+            `;
         }
 
         function render() {
@@ -810,10 +848,9 @@
                 filtered.sort((a, b) => a.r - b.r);
             }
 
-            // Render List Items
             const listContainer = document.getElementById("list");
             listContainer.innerHTML = filtered.map(l => {
-                const isActive = selectedLevel && selectedLevel.r === l.r ? "active" : "";
+                const isActive = selectedLevel && selectedLevel.r === l.r ? 'active' : '';
                 return `
                     <div class="card ${isActive}" onclick="selectLevel(${l.r})">
                         <div class="rank-badge">#${l.r}</div>
@@ -822,35 +859,13 @@
                             <div class="name">${l.n}</div>
                             <div class="meta">By ${l.c} • Verified by ${l.v}</div>
                         </div>
-                        <div style="font-weight: bold; font-size: 14px; opacity: 0.8;">${l.s}</div>
+                        <div style="font-weight: bold; opacity: 0.8;">${l.s}</div>
                     </div>
                 `;
             }).join('');
-
-            // Render Preview Panel
-            const panelContainer = document.getElementById("panel");
-            if (selectedLevel) {
-                const historyItems = selectedLevel.history.map(h => `<li>${h}</li>`).join('');
-                panelContainer.innerHTML = `
-                    <div style="font-size: 13px; font-weight: 700; text-transform: uppercase; color: var(--accent-color); letter-spacing: 0.5px;">Rank #${selectedLevel.r} Placement</div>
-                    <h2 style="margin: 0; font-size: 24px;">${selectedLevel.n}</h2>
-                    <div style="font-size: 14px; opacity: 0.7; margin-bottom: 5px;">Created by <strong>${selectedLevel.c}</strong></div>
-                    <div style="font-size: 14px; opacity: 0.7;">Verified by <strong>${selectedLevel.v}</strong></div>
-                    <img src="${getThumb(selectedLevel)}" alt="${selectedLevel.n}" style="margin-top: 5px;">
-                    <div class="desc">${selectedLevel.d}</div>
-                    <div class="history-box">
-                        <div class="history-title">Rank Placement History</div>
-                        <ul class="history-list">${historyItems}</ul>
-                    </div>
-                    ${selectedLevel.daysAtTop1 > 0 ? `<div style="font-size: 13px; opacity: 0.8; padding: 5px 0;">🏆 Held Rank #1 spot for <strong>${selectedLevel.daysAtTop1} days</strong>.</div>` : ""}
-                    <a class="panel-action-btn" href="https://youtu.be/${selectedLevel.videoId}" target="_blank">Watch Verification Run</a>
-                `;
-            } else {
-                panelContainer.innerHTML = `<p style="text-align: center; opacity: 0.5; margin-top: 50px;">Select a demon to preview details</p>`;
-            }
         }
 
-        // Run baseline setup render
+        // Initialize view
         render();
     </script>
 </body>
