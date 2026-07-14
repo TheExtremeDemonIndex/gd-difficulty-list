@@ -13,7 +13,6 @@
             --active-color: #3b82f6;
             --border-color: #2d2d34;
             --header-bg: #1e1e24;
-            --rank-badge-bg: #2d3748;
             --rank-badge-text: #f8fafc;
         }
 
@@ -25,8 +24,7 @@
             --active-color: #2563eb;
             --border-color: #e2e8f0;
             --header-bg: #f1f5f9;
-            --rank-badge-bg: #64748b;
-            --rank-badge-text: #ffffff;
+            --rank-badge-text: #0f172a;
         }
 
         body {
@@ -102,16 +100,13 @@
         }
 
         .rank-badge {
-            background-color: var(--rank-badge-bg);
             color: var(--rank-badge-text);
             font-weight: 700;
-            font-size: 14px;
-            min-width: 40px;
-            height: 40px;
+            font-size: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 6px;
+            padding: 0 5px;
         }
 
         .thumb {
@@ -815,59 +810,48 @@
             listContainer.innerHTML = filtered.map(l => `
                 <div class="card ${selectedLevel && selectedLevel.r === l.r ? 'active' : ''}" onclick="selectLevel(${l.r})">
                     <div class="rank-badge">#${l.r}</div>
-                    <img class="thumb" src="${getThumb(l)}" alt="${l.n} thumbnail">
+                    <img class="thumb" src="${getThumb(l)}" alt="${l.n}">
                     <div class="info">
                         <div class="name">${l.n}</div>
-                        <div class="meta">By ${l.c} • Verifier: ${l.v} • Score: ${l.s}</div>
+                        <div class="meta">By ${l.c} • Verified by ${l.v}</div>
                     </div>
                 </div>
             `).join('');
 
-            // Render Preview Panel
+            // Render Panel Content
             const panelContainer = document.getElementById("panel");
             if (selectedLevel) {
                 panelContainer.innerHTML = `
-                    <div style="font-size: 13px; font-weight: 800; text-transform: uppercase; color: var(--accent-color); letter-spacing: 1px;">Rank #${selectedLevel.r}</div>
-                    <h2 style="margin: 0; font-size: 28px; font-weight: 800; line-height: 1.2;">${selectedLevel.n}</h2>
-                    <div class="meta" style="font-size: 14px; margin-top: -5px;">
-                        Created by <strong style="color: var(--text-color);">${selectedLevel.c}</strong><br>
-                        Verified by <strong style="color: var(--text-color);">${selectedLevel.v}</strong>
+                    <div style="font-size: 14px; text-transform: uppercase; font-weight: bold; color: var(--accent-color);">Rank #${selectedLevel.r}</div>
+                    <h2 style="margin: 0; font-size: 28px;">${selectedLevel.n}</h2>
+                    <div style="font-size: 14px; opacity: 0.8;">
+                        <strong>Creator:</strong> ${selectedLevel.c}<br>
+                        <strong>Verifier:</strong> ${selectedLevel.v}<br>
+                        <strong>Score:</strong> ${selectedLevel.s} Points<br>
+                        ${selectedLevel.daysAtTop1 > 0 ? `<strong>Days at Top 1:</strong> ${selectedLevel.daysAtTop1}` : ''}
                     </div>
-                    
                     <img src="${getThumb(selectedLevel)}" alt="${selectedLevel.n}">
-                    
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 5px 0;">
-                        <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; text-align: center;">
-                            <div style="font-size: 11px; opacity: 0.6; text-transform: uppercase; font-weight: bold;">List Score</div>
-                            <div style="font-size: 20px; font-weight: bold; margin-top: 4px; color: var(--accent-color);">${selectedLevel.s}</div>
-                        </div>
-                        <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; text-align: center;">
-                            <div style="font-size: 11px; opacity: 0.6; text-transform: uppercase; font-weight: bold;">Days at Top 1</div>
-                            <div style="font-size: 20px; font-weight: bold; margin-top: 4px;">${selectedLevel.daysAtTop1}</div>
-                        </div>
-                    </div>
-
                     <div class="desc">${selectedLevel.d}</div>
-
+                    
                     <div class="history-box">
                         <div class="history-title">Rank Placement History</div>
                         <ul class="history-list">
                             ${selectedLevel.history.map(h => `<li>${h}</li>`).join('')}
                         </ul>
                     </div>
-
-                    <a class="panel-action-btn" href="https://youtube.com/watch?v=${selectedLevel.videoId}" target="_blank">Watch Video</a>
+                    
+                    <a href="https://youtu.be/${selectedLevel.videoId}" target="_blank" class="panel-action-btn">Watch Verification Video</a>
                 `;
-            } else {
-                panelContainer.innerHTML = `<p style="text-align: center; opacity: 0.5; margin-top: 50px;">Select a demon to preview details</p>`;
             }
         }
 
-        // Initialize App
-        if (levels.length > 0) {
-            selectedLevel = levels[0];
-        }
-        render();
+        // Run baseline configuration
+        window.onload = function() {
+            if(levels.length > 0) {
+                selectedLevel = levels[0];
+            }
+            render();
+        };
     </script>
 </body>
 </html>
