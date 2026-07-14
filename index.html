@@ -107,6 +107,7 @@
             align-items: center;
             justify-content: center;
             padding: 0 5px;
+            min-width: 30px;
         }
 
         .thumb {
@@ -196,6 +197,7 @@
             text-decoration: none;
             display: block;
             border-radius: 6px;
+            box-sizing: border-box;
         }
 
         /* Modal styling */
@@ -295,7 +297,7 @@
             {
                 date: "June 22, 2026",
                 changes: [
-                    "Added Sakupen Circles at #35 (Score 910), verified by Diamond.",
+                    "Added Sakupen Circles (Diamond) at #35 (Score 910), verified by Diamond.",
                     "Corrected directional terms in placement logs to ensure moving to a lower-numbered index is labeled as 'Moved up' rather than 'Pushed down'.",
                     "Integrated a dedicated dynamic Rank Placement History block into the details view panel for all list tracks.",
                     "Rearranged preview panel content hierarchy to place rank headers directly above level title lines.",
@@ -314,7 +316,7 @@
                     "Updated Green Bullet (#7) creator parameters to Cherry Team.",
                     "Added Society at #1 (Score 990), verified by wPopoff. Tracker initialized at 1 day.",
                     "Updated Flamewall's final historic Top 1 tracker duration to 14 days (2 weeks).",
-                    "Added Sakupen Circles at #8 (Score 955), verified by ad3us."
+                    "Added Sakupen Circles (ad3us) at #8 (Score 955), verified by ad3us."
                 ]
             },
             {
@@ -439,7 +441,7 @@
             },
             {
                 r: 8,
-                n: "Sakupen Circles",
+                n: "Sakupen Circles (ad3us)",
                 c: "Nick24",
                 v: "ad3us",
                 s: 955,
@@ -516,7 +518,7 @@
             },
             {
                 r: 15,
-                n: "andromeda",
+                n: "Andromeda",
                 c: "Insxne97",
                 v: "taiago",
                 s: 937,
@@ -736,7 +738,7 @@
             },
             {
                 r: 35,
-                n: "Sakupen Circles",
+                n: "Sakupen Circles (Diamond)",
                 c: "Nick24",
                 v: "Diamond",
                 s: 910,
@@ -798,74 +800,81 @@
 
             let top1Section = '';
             if (selectedLevel.daysAtTop1 > 0) {
-                top1Section = `<div style="font-size: 14px; margin-bottom: 5px; color: #eab308; font-weight: bold;">🏆 Days at Top 1: ${selectedLevel.daysAtTop1}</div>`;
+                top1Section = `
+                    <div style="font-size: 14px; margin-top: 5px; color: #eab308; font-weight: bold;">
+                        👑 Days at Top 1: ${selectedLevel.daysAtTop1} days
+                    </div>
+                `;
             }
 
-            let historyItems = selectedLevel.history.map(h => `<li>${h}</li>`).join('');
+            let historySection = '';
+            if (selectedLevel.history && selectedLevel.history.length > 0) {
+                historySection = `
+                    <div class="history-box">
+                        <div class="history-title">Rank Placement History</div>
+                        <ul class="history-list">
+                            ${selectedLevel.history.map(h => `<li>${h}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
 
             panel.innerHTML = `
-                <div style="font-size: 14px; font-weight: bold; color: var(--accent-color); text-transform: uppercase;">#${selectedLevel.r} Placement</div>
-                <h2 style="margin: 0; font-size: 26px;">${selectedLevel.n}</h2>
-                <div style="font-size: 14px; opacity: 0.8; margin-bottom: 10px;">By ${selectedLevel.c} | Verified by ${selectedLevel.v}</div>
-                
-                <img src="${getThumb(selectedLevel)}" alt="${selectedLevel.n}">
-                
-                <div style="font-size: 15px; font-weight: bold; margin-top: 5px;">Score Allocation: ${selectedLevel.s}</div>
-                ${top1Section}
-                
-                <p class="desc">${selectedLevel.d}</p>
-                
-                <div class="history-box">
-                    <div class="history-title">Rank Placement History</div>
-                    <ul class="history-list">
-                        ${historyItems}
-                    </ul>
+                <div style="font-size: 14px; text-transform: uppercase; font-weight: bold; letter-spacing: 1px; color: var(--accent-color);">Rank #${selectedLevel.r}</div>
+                <h2 class="name" style="margin: 0 0 5px 0; font-size: 24px;">${selectedLevel.n}</h2>
+                <div class="meta" style="margin-bottom: 10px;">
+                    <div><strong>Creator:</strong> ${selectedLevel.c}</div>
+                    <div><strong>Verifier:</strong> ${selectedLevel.v}</div>
+                    <div><strong>Points Score:</strong> ${selectedLevel.s}</div>
+                    ${top1Section}
                 </div>
-                
-                <a href="https://youtu.be/${selectedLevel.videoId}" target="_blank" class="panel-action-btn">Watch Video</a>
+                <img src="${getThumb(selectedLevel)}" alt="${selectedLevel.n} thumbnail">
+                <div class="desc">${selectedLevel.d}</div>
+                ${historySection}
+                <a class="panel-action-btn" href="https://youtu.be/${selectedLevel.videoId}" target="_blank">Watch Verification Video</a>
             `;
         }
 
         function render() {
+            const listContainer = document.getElementById("list");
             const searchVal = document.getElementById("search").value.toLowerCase();
             const sortVal = document.getElementById("sort").value;
 
-            // Filter
             let filtered = levels.filter(l => 
                 l.n.toLowerCase().includes(searchVal) || 
                 l.c.toLowerCase().includes(searchVal) || 
                 l.v.toLowerCase().includes(searchVal)
             );
 
-            // Sort
-            if (sortVal === "low-score") {
+            if (sortVal === "placement") {
+                filtered.sort((a, b) => a.r - b.r);
+            } else if (sortVal === "low-score") {
                 filtered.sort((a, b) => a.s - b.s);
             } else if (sortVal === "alphabetical") {
                 filtered.sort((a, b) => a.n.localeCompare(b.n));
             } else if (sortVal === "site-top1") {
                 filtered.sort((a, b) => b.daysAtTop1 - a.daysAtTop1);
-            } else {
-                filtered.sort((a, b) => a.r - b.r);
             }
 
-            const listContainer = document.getElementById("list");
             listContainer.innerHTML = filtered.map(l => {
                 const isActive = selectedLevel && selectedLevel.r === l.r ? 'active' : '';
                 return `
                     <div class="card ${isActive}" onclick="selectLevel(${l.r})">
                         <div class="rank-badge">#${l.r}</div>
-                        <img class="thumb" src="${getThumb(l)}" alt="${l.n}">
+                        <img class="thumb" src="${getThumb(l)}" alt="thumb">
                         <div class="info">
                             <div class="name">${l.n}</div>
-                            <div class="meta">By ${l.c} • Verified by ${l.v}</div>
+                            <div class="meta">By ${l.c} | Verified by ${l.v}</div>
                         </div>
-                        <div style="font-weight: bold; opacity: 0.8;">${l.s}</div>
+                        <div style="font-weight: bold; font-size: 14px; opacity: 0.8; padding-right: 10px;">
+                            ${l.s} pts
+                        </div>
                     </div>
                 `;
             }).join('');
         }
 
-        // Initialize view
+        // Initialize display
         render();
     </script>
 </body>
