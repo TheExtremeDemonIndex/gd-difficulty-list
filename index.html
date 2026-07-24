@@ -367,7 +367,7 @@
                 ]
             }
         ];
-        
+
         const levels = [
             {
                 r: 1,
@@ -783,29 +783,29 @@
         }
 
         function renderChangelog() {
-            const listContainer = document.getElementById("changelog-list");
-            listContainer.innerHTML = changelogData.map(log => `
+            const container = document.getElementById("changelog-list");
+            container.innerHTML = changelogData.map(entry => `
                 <div class="log-entry">
-                    <div class="log-date" style="font-weight: bold; margin-bottom: 8px;">${log.date}</div>
+                    <div style="font-weight: bold; margin-bottom: 6px; color: var(--accent-color);">${entry.date}</div>
                     <ul class="log-list" style="margin: 0; padding-left: 20px;">
-                        ${log.changes.map(c => `<li>${c}</li>`).join('')}
+                        ${entry.changes.map(c => `<li>${c}</li>`).join("")}
                     </ul>
                 </div>
-            `).join('');
+            `).join("");
         }
 
         function toggleTheme() {
-            const currentTheme = document.body.getAttribute("data-theme");
-            document.body.setAttribute("data-theme", currentTheme === "light" ? "dark" : "light");
+            const currentTheme = document.documentElement.getAttribute("data-theme");
+            if (currentTheme === "light") {
+                document.documentElement.removeAttribute("data-theme");
+            } else {
+                document.documentElement.setAttribute("data-theme", "light");
+            }
         }
 
-        function getThumb(l) { 
-            return l.videoId ? `https://i.ytimg.com/vi/${l.videoId}/hqdefault.jpg` : "https://via.placeholder.com/320x180?text=No+Thumbnail";
-        }
-
-        function selectLevel(rank) {
-            selectedLevel = levels.find(l => l.r === rank);
-            render();
+        function selectLevel(level) {
+            selectedLevel = level;
+            renderList();
             renderPanel();
         }
 
@@ -816,38 +816,48 @@
                 return;
             }
 
-            const historyHtml = selectedLevel.history ? `
-                <div class="history-box">
-                    <div class="history-title">Rank Placement History</div>
-                    <ul class="history-list">
-                        ${selectedLevel.history.map(h => `<li>${h}</li>`).join('')}
-                    </ul>
-                </div>
-            ` : '';
+            const imgUrl = `https://img.youtube.com/vi/${selectedLevel.videoId}/hqdefault.jpg`;
+            const videoUrl = `https://www.youtube.com/watch?v=${selectedLevel.videoId}`;
+
+            const historyHtml = selectedLevel.history && selectedLevel.history.length > 0 
+                ? `
+                    <div class="history-box">
+                        <div class="history-title">Rank Placement History</div>
+                        <ul class="history-list">
+                            ${selectedLevel.history.map(item => `<li>${item}</li>`).join('')}
+                        </ul>
+                    </div>
+                ` 
+                : '';
 
             panel.innerHTML = `
-                <img src="${getThumb(selectedLevel)}" alt="${selectedLevel.n}">
-                <div>
-                    <span style="font-size: 14px; font-weight: bold; color: var(--accent-color);">#${selectedLevel.r} Placement</span>
-                    <h2 style="margin: 4px 0 0 0; font-size: 24px;">${selectedLevel.n}</h2>
-                    <p style="margin: 4px 0 0 0; opacity: 0.7; font-size: 14px;">By <strong>${selectedLevel.c}</strong> | Verified by <strong>${selectedLevel.v}</strong></p>
+                <div style="font-size: 14px; font-weight: bold; color: var(--accent-color); text-transform: uppercase; letter-spacing: 0.5px;">
+                    #${selectedLevel.r} Placement Track
                 </div>
-                <div style="font-size: 14px; opacity: 0.8;">Score Benchmark: <strong>${selectedLevel.s}</strong></div>
-                ${historyHtml}
+                <h2 style="margin: 0 0 5px 0; font-size: 24px;">${selectedLevel.n}</h2>
+                <div class="meta" style="margin-bottom: 10px;">
+                    Created by <strong>${selectedLevel.c}</strong> • Verified by <strong>${selectedLevel.v}</strong>
+                </div>
+                <img src="${imgUrl}" alt="${selectedLevel.n}">
+                <div class="meta" style="display: flex; gap: 15px; font-weight: 500;">
+                    <span>Score: <strong>${selectedLevel.s}</strong></span>
+                    ${selectedLevel.daysAtTop1 > 0 ? `<span>Days at Top 1: <strong>${selectedLevel.daysAtTop1}</strong></span>` : ''}
+                </div>
                 <div class="desc">${selectedLevel.d}</div>
-                <a href="https://www.youtube.com/watch?v=${selectedLevel.videoId}" target="_blank" class="panel-action-btn">Watch Verification Video</a>
+                ${historyHtml}
+                <a href="${videoUrl}" target="_blank" class="panel-action-btn">Watch Verification Video ↗</a>
             `;
         }
 
-        function render() {
-            const listContainer = document.getElementById("list");
+        function renderList() {
+            const list = document.getElementById("list");
             const searchVal = document.getElementById("search").value.toLowerCase();
             const sortVal = document.getElementById("sort").value;
 
-            let filtered = levels.filter(l => 
-                l.n.toLowerCase().includes(searchVal) || 
-                l.c.toLowerCase().includes(searchVal) ||
-                l.v.toLowerCase().includes(searchVal)
+            let filtered = levels.filter(lvl => 
+                lvl.n.toLowerCase().includes(searchVal) || 
+                lvl.c.toLowerCase().includes(searchVal) ||
+                lvl.v.toLowerCase().includes(searchVal)
             );
 
             if (sortVal === "placement") {
@@ -860,18 +870,29 @@
                 filtered.sort((a, b) => (b.daysAtTop1 || 0) - (a.daysAtTop1 || 0));
             }
 
-            listContainer.innerHTML = filtered.map(l => `
-                <div class="card ${selectedLevel && selectedLevel.r === l.r ? 'active' : ''}" onclick="selectLevel(${l.r})">
-                    <div class="rank-badge">#${l.r}</div>
-                    <img class="thumb" src="${getThumb(l)}" alt="${l.n}">
-                    <div class="info">
-                        <div class="name">${l.n}</div>
-                        <div class="meta">By ${l.c} | Verified by ${l.v}</div>
+            list.innerHTML = filtered.map(lvl => {
+                const isActive = selectedLevel && selectedLevel.r === lvl.r;
+                const imgUrl = `https://img.youtube.com/vi/${lvl.videoId}/mqdefault.jpg`;
+
+                return `
+                    <div class="card ${isActive ? 'active' : ''}" onclick="selectLevel(levels.find(l => l.r === ${lvl.r}))">
+                        <div class="rank-badge">#${lvl.r}</div>
+                        <img class="thumb" src="${imgUrl}" alt="${lvl.n}">
+                        <div class="info">
+                            <div class="name">${lvl.n}</div>
+                            <div class="meta">By ${lvl.c} • Verified by ${lvl.v}</div>
+                        </div>
+                        <div style="font-weight: bold; opacity: 0.8; padding-right: 5px;">${lvl.s}</div>
                     </div>
-                </div>
-            `).join('');
+                `;
+            }).join("");
         }
 
+        function render() {
+            renderList();
+        }
+
+        // Initialize display
         render();
     </script>
 </body>
